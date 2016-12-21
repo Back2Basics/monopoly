@@ -15,7 +15,7 @@ Players currently have a percentage strategy built it (When considering a purcha
 I left off chance cards because I am going to be running 100's and 1000's of simulations and which player wins the beauty pagent isn't going to have a huge influence on the overall strategy of the game.  However I need to add them back in due to certain cards that take you someplace else on the board which changes the chances if you buy certain properties.
 
 ** House/Apartment limits:
-I was going to allow for infinte houses.  Well it turns out that limitation is a stratagy point... I'll put the limits back in.
+I was going to allow for infinite houses.  Well it turns out that limitation is a strategy point... I'll put the limits back in.
 
 ** Bank Limit:
 There is a limit on the amount of money on the board.  I am used to playing the FED rules (just print more).  I've never hit the limit but given the number of games I'm playing ... it could happen but... what do I do when that happens?

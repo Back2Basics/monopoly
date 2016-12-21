@@ -1,11 +1,14 @@
+import os
 from random import randint
 import pandas as pd
 import numpy as np
 import arrow
 import json
 
+
 class Gameinfo():
     def __init__(self):
+        self.timeout = False
         self.board = pd.DataFrame([{'color': 'purple',
                                     'cost': 60,
                                     'name': 'Mediterranean Ave.',
@@ -151,11 +154,10 @@ class Gameinfo():
 
 
     def utility_rent(self):
-        if len(set([self.owned_by(7),self.owned_by(20)])) == 2:
+        if len(set([self.owned_by(7), self.owned_by(20)])) == 2:
             return randint(2, 12) * 10
         else:
             return randint(2, 12) * 4
-
 
     def how_much_rent(self, idx, player=None):  # n is board index
         """question is how much rent do I need to pay and to whom
@@ -172,21 +174,27 @@ class Gameinfo():
             owns_rr = self.owners[self.board.type == 'railroad'].owner
             how_many_rr_does_player_own = (owns_rr == owner).sum()
 
-            return owner, self.board.rent[idx][how_many_rr_does_player_own-1]
+            return owner, self.board.rent[idx][how_many_rr_does_player_own - 1]
 
         elif self.board.type[idx] == 'utility':
             return owner, self.utility_rent()
-        elif self.owned_by(idx) != player and \
+        elif owner != player and \
                         len(set(
                             self.owners.owner[self.board[self.board.color == self.board.color[
                                 idx]].index])) == 1:  # player owns all of a color
             return owner, self.board.rent[idx][self.owners.houses.iloc[idx]] * 2
         else:
-            return owner, self.board.rent[idx][self.owners.houses.iloc[idx]]
-
+            #what is this again
+            try:
+                something = self.board.rent.iloc[idx][self.owners.houses.iloc[idx]]
+            except BaseException:
+                print('idx: {}'.format(idx))
+                print('self.owners.houses.iloc[idx]: {}'.format(self.owners.houses.iloc[idx]))
+                print('sself.board.rent.iloc[idx]: {}'.format(self.board.rent.iloc[idx]))
+            return owner, something
 
     def owned_properties(self):
-        return self.owners[self.owners.owner.isnull()==False].index
+        return self.owners[self.owners.owner.isnull() == False].index
 
     def owned_by(self, idx=0):
         return self.owners.owner.iloc[idx]
@@ -196,28 +204,37 @@ class Gameinfo():
             player.move()
             owns = self.owned_by(player.pos)
             if player == owns or pd.isnull(owns):
-                player.buy((self, player.pos), player.percentage) #has pay_rent built in
+                player.buy((self, player.pos), player.percentage)  # has pay_rent built in
             else:
-                player.pay_rent()#owns, self.how_much_rent(player.pos, player=player))
-
+                player.pay_rent()  # owns, self.how_much_rent(player.pos, player=player))
 
     def start(self):
+
         self.starttime = arrow.utcnow()
-        self.endtime = self.starttime.replace(minute=self.starttime.minute+1)
-
-
-        while self.endtime.float_timestamp >= self.starttime.float_timestamp:
+        self.force_game_over = self.starttime.shift(seconds=60)
+        the_time = arrow.utcnow()
+        while self.force_game_over >= the_time and sum([True for x in self.playerlist if x.active])>1:
             self.turn()
             the_time = arrow.utcnow()
-        self.real_end_time = arrow.utcnow()
-        print('draw - timeout')
-
-    def collect_info(self):
-        with open('winner.json','r') as win_info:
-            winner = json.load(win_info.read())
-        winner = self.playerlist[self.playerlist.money>=0]
-        winner_properties=self.board[self.owners.owner==winner].index
-        with open('winner.json','r') as win_info:
-            win_info.write(json.dump(winner))
 
 
+    def __enter__(self):
+        if os.path.exists('monopoly_data.json'):
+            self.stats = pd.read_json('monopoly_data.json')
+
+        else:
+            self.stats = pd.DataFrame(
+                columns=['game_no', 'player', 'lap', 'bought_or_sold', 'house', 'property_location'])
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.timeout:
+            print('timeout')
+            return
+        else:
+            with open('monopoly_stats.json','w') as statsfile:
+                statsfile.write(pd.DataFrame.to_json(self.stats))
+
+            # I should have information about the winners and losers
+            # what properties I had on which lap they bought particular properties,
+            # which lap they bought particular houses on properties.
