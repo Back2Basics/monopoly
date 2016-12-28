@@ -6,7 +6,7 @@ from players import *
 
 with Gameinfo() as g1:
     g1.playerlist.append(Player(g1, 'John', 100))  # john buys 100 percent of the time
-    g1.playerlist.append(Player(g1, 'Anna', 85))  # anna buys 100 percent of the time
+    g1.playerlist.append(Player(g1, 'Anna', 100))  # anna buys 85 percent of the time
     p1 = g1.playerlist[0]
     p2 = g1.playerlist[1]
     g1.start()

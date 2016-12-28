@@ -109,7 +109,7 @@ class RunGame(unittest.TestCase):
         self.g1.playerlist.append(Player(self.g1, 'Anna', 100))  # anna buys 100 percent of the time
         self.p1 = self.g1.playerlist[0]
         self.p2 = self.g1.playerlist[1]
-        self.g1.turn()
+        self.g1.turn(self.p1)
         # self.p1.buy((self.g1, 0),100)
         # self.p2.buy((self.g1, 1),100)
 
