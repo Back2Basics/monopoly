@@ -97,10 +97,8 @@ class HowMuchDoubleRentTests(unittest.TestCase):
     def test_double_rent(self):
         self.assertEqual(self.g1.how_much_rent(0, self.p2), (self.p1, 4))
         self.assertEqual(self.g1.how_much_rent(3, self.p2), (self.p1, 6)) #only pay single
-        self.p1.buy((self.g1, 5), 100)  #till they buy all 3 properties
+        self.p1.buy((self.g1, 5), 100)  #till p1 buys all 3 properties
         self.assertEqual(self.g1.how_much_rent(3, self.p2), (self.p1, 12)) #then the rent is doubled
-        self.p2.buy((self.g1, 0), 100)
-        self.assertEqual(self.p2.money, 1496)
 
 class RunGame(unittest.TestCase):
     def setUp(self):
@@ -124,9 +122,6 @@ class SellingProperties(unittest.TestCase):
         self.p1 = self.g1.playerlist[0]
         self.p2 = self.g1.playerlist[1]
 
-
-
-
     def test_sell_properties(self):
         self.p1.buy((self.g1, 15), 100)
         self.p1.buy((self.g1, 16), 100)
@@ -141,8 +136,8 @@ class SellingProperties(unittest.TestCase):
         self.p1.buy((self.g1, 25), 100)
         self.p1.buy((self.g1, 26), 100)
         self.p1.buy((self.g1, 27), 100)
-        print(self.p1.money)
-        print(self.g1.owned_properties())
+        self.assertEqual(self.p1.money,170)
+        self.assertSetEqual(set(self.g1.owned_properties()), set([15, 16, 17, 18, 19, 20]))
 
 #
 # File "/Users/jlangley/Documents/code/monopoly/cards_and_rents.py", line 209, in start

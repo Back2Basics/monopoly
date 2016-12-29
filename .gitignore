@@ -6,3 +6,5 @@
 *.iml
 
 monopoly_stats.json
+
+.coverage

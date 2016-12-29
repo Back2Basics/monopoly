@@ -15,6 +15,7 @@ class Gameinfo():
         self.board.index = self.board.index.map(int)
         self.board.cost = self.board.cost.map(int)
         self.board.type = self.board.type.map(str)
+        self.board.sort_index(inplace=True)
         self.playerlist = []
         self.house_cost = 150
 
