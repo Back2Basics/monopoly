@@ -59,7 +59,7 @@ class Player():
                 if self.money >= self.game.house_cost and (self.board.houses.iloc[pos] < 6):
                     self.board.houses.iloc[pos] += 1
                 self.money -= self.game.house_cost
-                print('player {} bought {}'.format(self.playername, self.pos))
+                print('player {} bought a house # {} at {}'.format(self.playername, self.board.houses.iloc[pos], self.pos))
                 return
             else:
                 # you have an apartment on the property what else do you want
@@ -69,6 +69,7 @@ class Player():
             if self.money > self.board.cost[pos]:
                 self.money -= self.board.cost[pos]
                 self.board.owner.iloc[pos] = self
+                print('player {} buys property {}'.format(self, self.pos))
                 return
             else:
                 pass  # too expensive.
@@ -112,12 +113,10 @@ class Player():
         return True
 
     def sell(self, pos=None):
-        print('selling {}'.format(pos))
-
         if pos is None:  # this is good for testing purposes
             pos = self.pos
         if (self.board.houses.iloc[pos]) > 0:
-
+            print('{} selling house {} at {}'.format(self, self.board.houses.iloc[pos], pos))
             self.money += self.game.house_cost
             self.board.houses.iloc[pos] -= 1
             if self.money > 0:
@@ -125,6 +124,7 @@ class Player():
             else:
                 self.sell(pos)
                 return
+        print('{} selling property {}'.format(self, pos))
         self.money += self.board.cost.iloc[pos]
         self.board.owner.iloc[pos] = None
 

@@ -53,8 +53,8 @@ class OwnedPropertyTests(unittest.TestCase):
 class HowMuchRentTests(unittest.TestCase):
     def setUp(self):
         self.g1 = Gameinfo()
-        self.g1.playerlist.append(Player(self.g1, 'John', 100))  # john buys 100 percent of the time
-        self.g1.playerlist.append(Player(self.g1, 'Anna', 100))  # anna buys 100 percent of the time
+        self.g1.playerlist.append(Player(self.g1, 'John', 100))  # John buys 100 percent of the time
+        self.g1.playerlist.append(Player(self.g1, 'Anna', 100))  # Anna buys 100 percent of the time
         self.p1 = self.g1.playerlist[0]
         self.p2 = self.g1.playerlist[1]
         self.p1.buy((self.g1, 0), 100)
