@@ -1,8 +1,8 @@
 from random import randint, choice
 from cards_and_rents import *
+import sys
 
-
-class Player():
+class Player:
     def __init__(self, game, playername='john', percentage=100):
         self.money = 1500
         self.pos = 0
@@ -59,7 +59,7 @@ class Player():
                 if self.money >= self.game.house_cost and (self.board.houses.iloc[pos] < 6):
                     self.board.houses.iloc[pos] += 1
                 self.money -= self.game.house_cost
-                print('player {} bought a house # {} at {}'.format(self.playername, self.board.houses.iloc[pos], self.pos))
+                print('player {} bought a house # {} at {}'.format(self.playername, self.board.houses.iloc[pos], self.board.name.iloc[self.pos]))
                 return
             else:
                 # you have an apartment on the property what else do you want
@@ -69,23 +69,32 @@ class Player():
             if self.money > self.board.cost[pos]:
                 self.money -= self.board.cost[pos]
                 self.board.owner.iloc[pos] = self
-                print('player {} buys property {}'.format(self, self.pos))
+                print('player {} buys property {}'.format(self, self.board.name.iloc[self.pos]))
                 return
             else:
                 pass  # too expensive.
 
     def pay_rent(self):
-        print('{} pay rent: {}'.format(self.playername, self.pos))
         owner = self.board.owner.iloc[self.pos]
         if owner is not None and owner is not self:
             rent = self.game.how_much_rent(self.pos)[1]
+            print('{} pay {} rent on {}'.format(self.playername, rent, self.pos))
+            try:
+                self.money = self.money - rent
+            except TypeError:
+                print(self.money, rent)
 
-            self.money = self.money - rent
             if self.money < 0:
                 while (True):
                     can_pay = self.get_money_by_selling()
                     if can_pay:
-                        owner.money += rent
+                        try:
+                            owner.money += rent
+                        except TypeError as e:
+                            print(owner.money)
+                            print(rent)
+                            print('error was {}'.format(e))
+                            sys.exit()
                         return True
                     else:
                         self.active = False
@@ -115,8 +124,11 @@ class Player():
     def sell(self, pos=None):
         if pos is None:  # this is good for testing purposes
             pos = self.pos
-        if (self.board.houses.iloc[pos]) > 0:
-            print('{} selling house {} at {}'.format(self, self.board.houses.iloc[pos], pos))
+        if (self.board.houses.iloc[pos]) < 0:
+            print("ERROR somewhere ERROR")
+
+        elif (self.board.houses.iloc[pos]) > 0:
+            print('{} selling house #{} at {}'.format(self, self.board.houses.iloc[pos], pos))
             self.money += self.game.house_cost
             self.board.houses.iloc[pos] -= 1
             if self.money > 0:

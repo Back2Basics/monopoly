@@ -1,0 +1,40 @@
+,color,cost,houses,name,owner,rent,type
+0,,0,0,GO,,,gov
+1,purple,60,0,Mediterranean Ave.,,"[2, 10, 30, 90, 160, 250]",property
+2,,0,,Community Chest,,,community
+3,purple,80,0,Baltic Ave.,,"[4, 20, 60, 180, 320, 450]",property
+4,,,,Income Tax,gov,200,gov
+5,,200,0,Reading Railroad.,,"[25, 50, 100, 200]",railroad
+6,bluegrey,100,0,Oriental Ave.,,"[6, 30, 90, 270, 400, 550]",property
+7,,,,Chance,,,gov
+8,bluegrey,100,0,Vermont Ave.,,"[6, 30, 90, 270, 400, 550]",property
+9,bluegrey,120,0,Conneticut Ave.,,"[8, 40, 100, 300, 450, 600]",property
+10,,,,Jail,gov,50,gov
+11,maroon,140,0,St. Charles Pl.,,"[10, 50, 150, 450, 625, 750]",property
+12,,150,0,Electric Company,,dice,utility
+13,maroon,140,0,States Ave.,,"[10, 50, 150, 450, 625, 750]",property
+14,maroon,160,0,Virginia Ave,,"[12, 60, 180, 500, 700, 900]",property
+15,,200,0,Pennsylvania Railroad,,"[25, 50, 100, 200]",railroad
+16,orange,180,0,St. James Pl.,,"[44, 70, 200, 550, 750, 950]",property
+17,,,,Community Chest,gov,,gov
+18,orange,180,0,Tennessee Ave.,,"[44, 70, 200, 550, 750, 950]",property
+19,orange,200,0,New York Ave.,,"[16, 80, 220, 600, 800, 1000]",property
+20,,0,,Free Parking,gov,,gov
+21,red,220,0,Kentucky Ave.,,"[18, 90, 250, 700, 875, 1050]",property
+22,,,,Chance,gov,,gov
+23,red,220,0,Indiana Ave.,,"[18, 90, 250, 700, 875, 1050]",property
+24,red,240,0,Illinois Ave.,,"[20, 100, 300, 750, 925, 1100]",property
+25,,200,0,B&O Railroad,,"[25, 50, 100, 200]",railroad
+26,yellow,260,0,Atlantic Ave.,,"[22, 110, 330, 800, 975, 1150]",property
+27,yellow,260,0,Ventnor Ave.,,"[22, 110, 330, 800, 975, 1150]",property
+28,,150,0,Water Works,,dice,utility
+29,yellow,280,0,Marvin Gardens,,"[24, 120, 360, 850, 1025, 1200]",property
+30,,,0,Go to Jail,gov,,gov
+31,green,300,0,Pacific Ave.,,"[26, 130, 390, 900, 1100, 1275]",property
+32,green,300,0,North Carolina Ave.,,"[26, 130, 390, 900, 1100, 1275]",property
+33,,0,,Community Chest,gov,,gov
+34,green,320,0,Pennsylvania Ave.,,"[28, 150, 450, 1000, 1200, 1400]",property
+35,,200,0,Short Line Railroad,,"[25, 50, 100, 200]",railroad
+36,,0,,Chance,gov,,gov
+37,blue,350,0,Park Pl.,,"[35, 175, 500, 1100, 1300, 1500]",property
+38,blue,400,0,Boardwalk,,"[50, 200, 600, 1400, 1700, 2000]",property
