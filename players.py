@@ -1,9 +1,15 @@
 from random import randint, choice
 from cards_and_rents import *
 import sys
+import numpy as np
 
 class Player:
     def __init__(self, game, playername='john', percentage=100):
+        self.buying_property_history = set()
+        self.buying_houses_history = np.array([0]*38)
+        self.selling_history = set()
+        self.selling_houses = np.array([0]*38)
+        self.paid_rent_on = []
         self.money = 1500
         self.pos = 0
         self.playername = playername
@@ -29,11 +35,10 @@ class Player:
 
     def is_buyable(self, pos):
         """can you buy the place or build a house/apartment?"""
-        if pos in self.board[((self.board.type == 'property')
-                                  & ((pd.isnull(self.board.owner))
-                                         | ((self.board.owner == self) & (self.board.houses < 5))) |
-                                      (pd.isnull(self.board.owner)) &
-                                      ((self.board.type == 'utility') | (self.board.type == 'railroad')))].index:
+        if pos in self.board[(self.board.type == 'gov')].index:
+            return False
+        elif pos in self.board[(((self.board.owner == self) & (self.board.houses < 5)) |
+                                      (pd.isnull(self.board.owner)))].index:
             return True
         else:
             return False
@@ -59,7 +64,8 @@ class Player:
                 if self.money >= self.game.house_cost and (self.board.houses.iloc[pos] < 6):
                     self.board.houses.iloc[pos] += 1
                 self.money -= self.game.house_cost
-                print('player {} bought a house # {} at {}'.format(self.playername, self.board.houses.iloc[pos], self.board.name.iloc[self.pos]))
+                print('player {} bought a house # {} at {}'.format(self.playername, self.board.houses.iloc[pos], self.board.name.iloc[pos]))
+                self.buying_houses_history[self.board.houses.iloc[pos]]+=1
                 return
             else:
                 # you have an apartment on the property what else do you want
@@ -69,7 +75,8 @@ class Player:
             if self.money > self.board.cost[pos]:
                 self.money -= self.board.cost[pos]
                 self.board.owner.iloc[pos] = self
-                print('player {} buys property {}'.format(self, self.board.name.iloc[self.pos]))
+                self.buying_property_history.add(pos)
+                print('player {} buys property {}'.format(self, self.board.name.iloc[pos]))
                 return
             else:
                 pass  # too expensive.
