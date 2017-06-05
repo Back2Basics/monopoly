@@ -8,10 +8,10 @@ class FirstTestCase(unittest.TestCase):
     def setUp(self):
         """setUp is called before every test"""
         self.g1 = Gameinfo()
-        self.p1 = Player('John')
-        self.p1.strategy(Generic_Strategy(self.g1))
+        self.p1 = Player(playername='John', game=self.g1)
+        self.p1.strategy = Generic_Strategy(self.g1)
         self.p2 = Player('Anna')
-        self.p2.strategy(Generic_Strategy(game=self.g1))
+        self.p2.strategy = Generic_Strategy(game=self.g1)
         self.g1.playerlist.append(self.p1)
         self.g1.playerlist.append(self.p2)
 

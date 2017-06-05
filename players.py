@@ -6,10 +6,9 @@ import numpy as np
 
 class Generic_Strategy:
     def __init__(self, game=None, buy_percent=100, favor_groups=[]):
-        self.game = game
         self.buy_percent = buy_percent
         self.favor_groups = favor_groups
-        return None
+        self.game = game
 
     def should_i_buy(self, square=0):
         """buy a property or house on the current position
@@ -52,11 +51,11 @@ class Generic_Strategy:
 
 class Player:
     def __init__(self, game=None, playername='John'):
-        self.game= game
+        self.game = game
         self.money = 1500
         self.pos = 0
         self.playername = playername
-        self._strategy = None
+        self.strategy = None
         self.active = True  # if the player is still in the game
 
         #statistics data
@@ -66,13 +65,6 @@ class Player:
         self.selling_houses = np.array([0] * 38)
         self.paid_rent_on = []
 
-    @property
-    def strategy(self):
-        return self._strategy
-
-    @strategy.setter
-    def strategy(self, strat):
-        self._strategy = strat
 
     def __str__(self):
         return self.playername
