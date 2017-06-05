@@ -3,20 +3,76 @@ from cards_and_rents import *
 import sys
 import numpy as np
 
+
+class Generic_Strategy:
+    def __init__(self, game=None, buy_percent=100, favor_groups=[]):
+        self.game = game
+        self.buy_percent = buy_percent
+        self.favor_groups = favor_groups
+        return None
+
+    def should_i_buy(self, square=0):
+        """buy a property or house on the current position
+        percentage_in_whole_numbers = 25(%)"""
+
+
+        if square is None:
+            square = self.square
+        if self.is_buyable(pos=square):
+            if randint(1, 100) > self.buy_percent:
+                print('returning because this did not buy or upgrade anything')
+                return False
+
+            # if (self.board.type.loc[square] == 'railroad' or self.board.type.loc[square] == 'utility'):
+
+            elif self.board.houses.iloc[square] < 5 and self.board.owner.iloc[square] == self and \
+                            self.board.type.iloc[square] == 'property':  # first test for ownership and house numbers
+                if self.money >= self.game.house_cost and (self.board.houses.iloc[square] < 6):
+                    self.board.houses.iloc[square] += 1
+                self.money -= self.game.house_cost
+                print('player {} bought a house # {} at {}'.format(self.playername, self.board.houses.iloc[square],
+                                                                   self.board.name.iloc[square]))
+                self.buying_houses_history[square] += 1
+                self.board.houses.iloc[square] += 1
+                return
+            else:
+                # you have an apartment on the property what else do you want
+                pass
+
+            # buy it if you can
+            if self.money > self.board.cost[square]:
+                self.money -= self.board.cost[square]
+                self.board.owner.iloc[square] = self
+                self.buying_property_history.add(square)
+                print('player {} buys property {}'.format(self, self.board.name.iloc[square]))
+                return
+            else:
+                pass  # too expensive.
+
+
 class Player:
-    def __init__(self, game, playername='john', percentage=100):
-        self.buying_property_history = set()
-        self.buying_houses_history = np.array([0]*38)
-        self.selling_history = set()
-        self.selling_houses = np.array([0]*38)
-        self.paid_rent_on = []
+    def __init__(self, game=None, playername='John'):
+        self.game= game
         self.money = 1500
         self.pos = 0
         self.playername = playername
-        self.percentage = percentage
-        self.game = game
-        self.board = self.game.board
+        self._strategy = None
         self.active = True  # if the player is still in the game
+
+        #statistics data
+        self.buying_property_history = set()
+        self.buying_houses_history = np.array([0] * 38)
+        self.selling_history = set()
+        self.selling_houses = np.array([0] * 38)
+        self.paid_rent_on = []
+
+    @property
+    def strategy(self):
+        return self._strategy
+
+    @strategy.setter
+    def strategy(self, strat):
+        self._strategy = strat
 
     def __str__(self):
         return self.playername
@@ -33,82 +89,9 @@ class Player:
     def is_owned(self, pos):
         return pos in self.board[not pd.isnull(self.board.owner)].index
 
-    def is_buyable(self, pos):
-        """can you buy the place or build a house/apartment?"""
-        if pos in self.board[(self.board.type == 'gov')].index:
-            return False
-        elif pos in self.board[(((self.board.owner == self) & (self.board.houses < 5)) |
-                                      (pd.isnull(self.board.owner)))].index:
-            return True
-        else:
-            return False
+    def should_i_buy(self, square):
+        return self.strategy.should_i_buy(square)
 
-    def buy(self, game_pos=(None, None), percentage_in_whole_numbers=100):
-        """buy a property or house on the current position
-        percentage_in_whole_numbers = 25(%)"""
-
-        if game_pos:
-            game, pos = game_pos
-        if pos is None:
-            pos = self.pos
-        if self.is_buyable(pos=pos):
-            if randint(1, 100) > percentage_in_whole_numbers:
-                print('returning because this did not buy or upgrade anything')
-                return
-                # build or revel in the fact that you own it
-
-            # if (self.board.type.loc[pos] == 'railroad' or self.board.type.loc[pos] == 'utility'):
-
-            elif self.board.houses.iloc[pos] < 5 and self.board.owner.iloc[pos] == self and self.board.type.iloc[
-                pos] == 'property':  # first test for ownership and house numbers
-                if self.money >= self.game.house_cost and (self.board.houses.iloc[pos] < 6):
-                    self.board.houses.iloc[pos] += 1
-                self.money -= self.game.house_cost
-                print('player {} bought a house # {} at {}'.format(self.playername, self.board.houses.iloc[pos], self.board.name.iloc[pos]))
-                self.buying_houses_history[self.board.houses.iloc[pos]]+=1
-                return
-            else:
-                # you have an apartment on the property what else do you want
-                pass
-
-            # buy it if you can
-            if self.money > self.board.cost[pos]:
-                self.money -= self.board.cost[pos]
-                self.board.owner.iloc[pos] = self
-                self.buying_property_history.add(pos)
-                print('player {} buys property {}'.format(self, self.board.name.iloc[pos]))
-                return
-            else:
-                pass  # too expensive.
-
-    def pay_rent(self):
-        owner = self.board.owner.iloc[self.pos]
-        if owner is not None and owner is not self:
-            rent = self.game.how_much_rent(self.pos)[1]
-            print('{} pay {} rent on {}'.format(self.playername, rent, self.pos))
-            try:
-                self.money = self.money - rent
-            except TypeError:
-                print(self.money, rent)
-
-            if self.money < 0:
-                while (True):
-                    can_pay = self.get_money_by_selling()
-                    if can_pay:
-                        try:
-                            owner.money += rent
-                        except TypeError as e:
-                            print(owner.money)
-                            print(rent)
-                            print('error was {}'.format(e))
-                            sys.exit()
-                        return True
-                    else:
-                        self.active = False
-                        return False
-        else:
-            # you own it
-            pass
 
     def _find_property_indexes(self):
         return list(self.board[self.board.owner == self].index)
