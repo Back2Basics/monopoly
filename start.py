@@ -4,13 +4,14 @@
 
 from cards_and_rents import *
 from players import *
-import numpy as np
 
 with Gameinfo() as game_info:
-    game_info.playerlist.append(Player(game_info, 'John_100_percent', 100))  # john buys 100 percent of the time
-    game_info.playerlist.append(Player(game_info, 'Anna_85_percent', 85))  # anna buys 85 percent of the time
-    game_info.playerlist.append(Player(game_info, 'Ian_65_percent', 65))  # anna buys 85 percent of the time
-    p1 = game_info.playerlist[0]
-    p2 = game_info.playerlist[1]
+
+    p1 = Player(playername='John', game=game_info)
+    p1.strategy = Generic_Strategy(game=game_info, player=p1)
+    p2 = Player('Anna')
+    p2.strategy = Generic_Strategy(game=game_info, player=p2)
+    game_info.playerlist.append(p1)
+    game_info.playerlist.append(p2)
     game_info.rounds_to_play = 10
     game_info.start_rounds()
