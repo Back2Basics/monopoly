@@ -3,6 +3,7 @@ from cards_and_rents import *
 from players import Player, Generic_Strategy
 import numpy as np
 
+
 class FirstTestCase(unittest.TestCase):
     @classmethod
     def setUp(self):
@@ -152,32 +153,39 @@ class test_stats(unittest.TestCase):
     def test_1buy(self):
         self.g6.buy(self.p1, 1)
         self.g6.buy_house(self.p1, 1)
-        #should have a property and a house.
+        # should have a property and a house.
         self.assertSetEqual(self.p1.buying_property_history, set([1]))
-        np.testing.assert_array_equal(self.p1.buying_houses_history, np.array([ 0.,  1.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]))
+        np.testing.assert_array_equal(self.p1.buying_houses_history,
+                                      np.array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         self.g6.buy_house(self.p1, 1)
-        np.testing.assert_array_equal(self.p1.buying_houses_history, np.array([ 0.,  2.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]))
+        np.testing.assert_array_equal(self.p1.buying_houses_history,
+                                      np.array([0., 2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         self.g6.buy_house(self.p1, 1)
-        np.testing.assert_array_equal(self.p1.buying_houses_history, np.array([ 0.,  3.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]))
+        np.testing.assert_array_equal(self.p1.buying_houses_history,
+                                      np.array([0., 3., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         self.g6.buy_house(self.p1, 1)
-        np.testing.assert_array_equal(self.p1.buying_houses_history, np.array([ 0.,  4.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]))
+        np.testing.assert_array_equal(self.p1.buying_houses_history,
+                                      np.array([0., 4., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         self.g6.buy_house(self.p1, 1)
-        np.testing.assert_array_equal(self.p1.buying_houses_history, np.array([ 0.,  5.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]))
-        #won't buy another house
+        np.testing.assert_array_equal(self.p1.buying_houses_history,
+                                      np.array([0., 5., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+        # won't buy another house
         self.g6.buy_house(self.p1, 1)
-        np.testing.assert_array_equal(self.p1.buying_houses_history, np.array([ 0.,  5.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,
-                                                                                0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.,  0.]))s
+        np.testing.assert_array_equal(self.p1.buying_houses_history,
+                                      np.array([0., 5., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+
 
 class GameInfoTurn(unittest.TestCase):
     @classmethod
@@ -195,6 +203,26 @@ class GameInfoTurn(unittest.TestCase):
         old_position = self.p1.current_position
         self.g8.turn(self.p1)
         self.assertGreater(self.p1.current_position, old_position)
+
+
+class BuyProperties(unittest.TestCase):
+    @classmethod
+    def setUp(self):
+        """setUp is called before every test"""
+        self.g9 = Gameinfo()
+        self.p1 = Player(playername='John', game=self.g9)
+        self.p1.strategy = Generic_Strategy(game=self.g9, player=self.p1)
+        self.p2 = Player('Anna')
+        self.p2.strategy = Generic_Strategy(game=self.g9, player=self.p2)
+        self.g9.playerlist.append(self.p1)
+        self.g9.playerlist.append(self.p2)
+        self.p1.money = 100000
+
+    def test_buy(self):
+        for square in range(39):
+            self.g9.buy(player=self.p1, square=square)
+            print("square = {}, self.p1.money = {}".format(square, self.p1.money))
+        self.assertEqual(abs(self.p1.money - 10000), self.g9.board.cost.sum())
 
 
 if __name__ == '__main__':

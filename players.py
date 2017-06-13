@@ -10,6 +10,15 @@ class Generic_Strategy:
         self.game = game
         self.player = player
 
+    def house_buying_strategy(self, square): # just a lame one to start out with
+        house_bought = []
+        for x in range(5):
+            if randint(0,100)<75:
+                house_bought.append(self.should_i_buy_house(square))
+            else:
+                pass
+        return any(house_bought)
+
     def should_i_buy_house(self, square=0):
         if self.game.is_house_buyable(self.player, square):
             if self.player.money >= self.game.house_cost:
@@ -57,7 +66,7 @@ class Player:
         return self.playername
 
     def move(self):
-        newpos = (self.current_position + randint(2, 12)) % len(self.game.board)
+        newpos = (self.current_position + randint(2, 12)) % 38
         if newpos < self.current_position:  # passed go
             self.money += 200
         self.current_position = newpos
@@ -108,6 +117,8 @@ class Player:
         self.money += self.game.board.cost.iloc[pos]
         self.game.board.owner.iloc[pos] = None
 
+    def house_buying_strategy(self, square):
+        return self.strategy.house_buying_strategy(square)
 
 if __name__ == '__main__':
     with Gameinfo() as gi:

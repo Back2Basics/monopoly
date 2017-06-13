@@ -5,13 +5,12 @@
 from cards_and_rents import *
 from players import *
 
-with Gameinfo() as game_info:
-
-    p1 = Player(playername='John', game=game_info)
-    p1.strategy = Generic_Strategy(game=game_info, player=p1)
-    p2 = Player('Anna')
-    p2.strategy = Generic_Strategy(game=game_info, player=p2)
-    game_info.playerlist.append(p1)
-    game_info.playerlist.append(p2)
-    game_info.rounds_to_play = 10
-    game_info.start_rounds()
+with Gameinfo() as gi:
+    p1 = Player(playername='John', game=gi)
+    p1.strategy = Generic_Strategy(game=gi, player=p1)
+    p2 = Player(playername='Anna', game=gi)
+    p2.strategy = Generic_Strategy(game=gi, player=p2)
+    gi.playerlist.append(p1)
+    gi.playerlist.append(p2)
+    gi.rounds_to_play = 10
+    gi.start_rounds()
