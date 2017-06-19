@@ -53,7 +53,7 @@ class Player:
 
         #statistics data
         self.buying_property_history = set()
-        self.buying_houses_history = np.array([0] * 38)
+        self.buying_houses_history = np.array([0] * 39)
         self.selling_history = set()
         self.selling_houses = np.array([0] * 38)
         self.paid_rent_on = []

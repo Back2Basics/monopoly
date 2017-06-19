@@ -103,33 +103,33 @@ class HowMuchRentTests(unittest.TestCase):
         np.testing.assert_array_equal(self.p1.buying_houses_history,
                                       np.array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                                 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         self.g1.buy_house(self.p1, 1)
         np.testing.assert_array_equal(self.p1.buying_houses_history,
                                       np.array([0., 2., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                                 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         self.g1.buy_house(self.p1, 1)
         np.testing.assert_array_equal(self.p1.buying_houses_history,
                                       np.array([0., 3., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                                 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         self.g1.buy_house(self.p1, 1)
         np.testing.assert_array_equal(self.p1.buying_houses_history,
                                       np.array([0., 4., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                                 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         self.g1.buy_house(self.p1, 1)
         np.testing.assert_array_equal(self.p1.buying_houses_history,
                                       np.array([0., 5., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                                 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
         # won't buy another house
         self.g1.buy_house(self.p1, 1)
         np.testing.assert_array_equal(self.p1.buying_houses_history,
                                       np.array([0., 5., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
                                                 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
-                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
+                                                0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]))
 
 
     def test_turn(self):
@@ -138,13 +138,12 @@ class HowMuchRentTests(unittest.TestCase):
         self.assertGreater(self.p1.current_position, old_position)
 
 
-    def test_buy(self):
+    def test_buy_every_square(self):
         '''give player 1 the money to buy every square available'''
         self.p1.money = 100000
         my_list = []
-        for square in range(39):
+        for square in range(len(self.g1.board)):
             self.g1.buy(player=self.p1, square=square)
             my_list.append(abs(self.p1.money-100000))
         compare = pd.Series(my_list, name='cost')
         pdt.assert_series_equal(compare, self.g1.board.cost.cumsum())
-        #abs(self.p1.money - 10000), self.g1.board.cost.sum())

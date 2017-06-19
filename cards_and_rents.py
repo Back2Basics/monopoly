@@ -46,6 +46,13 @@ class Gameinfo:
         if self.is_buyable(square) and player.money > self.board.cost[square]:
             if player.should_i_buy_square(square) == True:
                 player.money -= self.board.cost.iloc[square]
+
+                # example to remove the pandas setting value on copy warning from stackoverflow.
+                # row_index = df.col1 == 10
+                # # then with the form .loc[row_indexer,col_indexer]
+                # df.loc[row_index, 'col1'] = 100
+
+                self.board.iloc[square, 'owner']
                 self.board.owner[square] = player
                 player.buying_property_history.add(square)
                 return True
@@ -123,7 +130,7 @@ class Gameinfo:
         owner = self.owned_by(square)
         if self.board.type.iloc[square] == 'gov':
             if square== 4: # landed on Income Tax
-                tax = max(int(player.money*0.15), 50) #greater of 50 or 15% #TODO: I need to check the board
+                tax = max(int(player.money*0.10), 200) #greater of 200 or 10%
                 return 'gov', tax
             return 'gov', 0
 
