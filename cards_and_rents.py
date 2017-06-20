@@ -47,13 +47,7 @@ class Gameinfo:
             if player.should_i_buy_square(square) == True:
                 player.money -= self.board.cost.iloc[square]
 
-                # example to remove the pandas setting value on copy warning from stackoverflow.
-                # row_index = df.col1 == 10
-                # # then with the form .loc[row_indexer,col_indexer]
-                # df.loc[row_index, 'col1'] = 100
-
-                self.board.iloc[square, 'owner']
-                self.board.owner[square] = player
+                self.board.loc[square, 'owner'] = player
                 player.buying_property_history.add(square)
                 return True
         return False
@@ -63,7 +57,7 @@ class Gameinfo:
         if self.is_house_buyable(player, square):
             if square in self.board[((self.board.owner == player) & (self.board.houses < 5))].index:
                 if player.should_i_buy_house(square):
-                    self.board.houses.iloc[square] += 1
+                    self.board.loc[square, 'houses'] += 1
                     player.money -= self.house_cost
                     print('player {} bought a house # {} at {}'.format(player, self.board.houses.iloc[square],
                                                                        self.board.name.iloc[square]))
