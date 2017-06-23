@@ -3,6 +3,9 @@ from random import randint
 import pandas as pd
 from copy import deepcopy
 import arrow
+import logging
+log = logging.getLogger('SEC')
+from pandas.util.testing import expr
 
 basePath = os.path.dirname(os.path.abspath(__file__))
 
@@ -36,8 +39,10 @@ class Gameinfo:
         return self.board.type[square] == 'property'
 
     def is_house_buyable(self, player, square):
-        if self.is_property(square) and \
-                        square in self.board[((self.board.owner == player) & (self.board.houses < 5))].index:
+        if square in self.board[((self.board.type == 'property')
+                                     & (self.board.owner.notnull())
+                                     & (self.board.owner == player)
+                                     & (self.board.houses < 5))].index:
             return True
         return False
 
@@ -78,13 +83,16 @@ class Gameinfo:
     def pay_rent(self, square, player):
         owner, rent = self.how_much_rent(square, player)
         print('{} pay {} rent on {}'.format(player, rent, player.current_position))
-
+        print('before player: {} has {}'.format(player, player.money))
         if self.check_money(player, rent):
             if owner == 'gov':  # don't act on this extra money
                 pass
             else:
                 owner.money += rent
                 player.money = player.money - rent
+                print('after player: {} has {}'.format(player, player.money))
+                return True
+
         else:
             print(player.money, rent)
 
@@ -94,6 +102,8 @@ class Gameinfo:
                     if can_pay:
                         try:
                             owner.money += rent
+                            print('after player: {} has {}'.format(player, player.money))
+
                         except TypeError as e:
                             print(owner.money)
                             print(rent)
@@ -123,8 +133,8 @@ class Gameinfo:
 
         owner = self.owned_by(square)
         if self.board.type.iloc[square] == 'gov':
-            if square== 4: # landed on Income Tax
-                tax = max(int(player.money*0.10), 200) #greater of 200 or 10%
+            if square == 4:  # landed on Income Tax
+                tax = max(int(player.money * 0.10), 200)  # greater of 200 or 10%
                 return 'gov', tax
             return 'gov', 0
 
@@ -147,6 +157,7 @@ class Gameinfo:
             try:
                 rent_payment = self.board.rent.iloc[square][self.board.houses.iloc[square]]
             except BaseException:
+                print('there was an error')
                 print('square: {}'.format(square))
                 print('self.board.rent.iloc[square]: {}'.format(self.board.rent.iloc[square]))
                 print('self.board.name.iloc[square]: {}'.format(self.board.name.iloc[square]))
@@ -162,11 +173,11 @@ class Gameinfo:
 
     def turn(self, player):
         player.move()
-        if player.current_position in (7,22,36): #chance squares
-            #TODO: fix Chance in Game_info.turn
+        if player.current_position in (7, 22, 36):  # chance squares
+            # TODO: fix Chance in Game_info.turn
             return
-        if player.current_position in (2,17,33):
-            #TODO: fix community chest in Game_info.turn
+        if player.current_position in (2, 17, 33):
+            # TODO: fix community chest in Game_info.turn
             return
 
         is_recently_bought = self.buy(player, player.current_position)

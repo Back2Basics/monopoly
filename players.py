@@ -12,6 +12,8 @@ class Generic_Strategy:
 
     def house_buying_strategy(self, square): # just a lame one to start out with
         house_bought = []
+        if self.player.money < self.game.house_cost:
+            return False
         for x in range(5):
             if randint(0,100)<75:
                 house_bought.append(self.should_i_buy_house(square))
@@ -53,9 +55,11 @@ class Player:
 
         #statistics data
         self.buying_property_history = set()
-        self.buying_houses_history = np.array([0] * 39)
+        self.buying_houses_history = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.int8)
         self.selling_history = set()
-        self.selling_houses = np.array([0] * 38)
+        self.selling_houses = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], dtype=np.int8)
         self.paid_rent_on = []
 
 
@@ -66,7 +70,7 @@ class Player:
         return self.playername
 
     def move(self):
-        newpos = (self.current_position + randint(2, 12)) % 38
+        newpos = (self.current_position + randint(2, 12)) % len(self.game.board)
         if newpos < self.current_position:  # passed go
             self.money += 200
         self.current_position = newpos
