@@ -64,8 +64,8 @@ class Gameinfo:
                 if player.should_i_buy_house(square):
                     self.board.loc[square, 'houses'] += 1
                     player.money -= self.house_cost
-                    print('player {} bought a house # {} at {}'.format(player, self.board.houses.iloc[square],
-                                                                       self.board.name.iloc[square]))
+                    #print('player {} bought a house # {} at {}'.format(player, self.board.houses.iloc[square],
+                    #                                                   self.board.name.iloc[square]))
                     player.buying_houses_history[square] += 1
                     return True
         return False
@@ -82,15 +82,15 @@ class Gameinfo:
 
     def pay_rent(self, square, player):
         owner, rent = self.how_much_rent(square, player)
-        print('{} pay {} rent on {}'.format(player, rent, player.current_position))
-        print('before player: {} has {}'.format(player, player.money))
+        # print('{} pay {} rent on {}'.format(player, rent, player.current_position))
+        # print('before player: {} has {}'.format(player, player.money))
         if self.check_money(player, rent):
             if owner == 'gov':  # don't act on this extra money
                 pass
             else:
                 owner.money += rent
-                player.money = player.money - rent
-                print('after player: {} has {}'.format(player, player.money))
+                player.money -= rent
+                # print('owner was {} \n has {} \nplayer: {}\n has {}\n   rent was {}'.format(owner, owner.money, player, player.money, rent))
                 return True
 
         else:
@@ -99,10 +99,11 @@ class Gameinfo:
             if player.money < 0:
                 while (True):
                     can_pay = player.get_money_by_selling()
+                    print('can pay was reached by player {} with money = {}'.format(player, player.money))
                     if can_pay:
                         try:
                             owner.money += rent
-                            print('after player: {} has {}'.format(player, player.money))
+                            #print('after player: {} has {}'.format(player, player.money))
 
                         except TypeError as e:
                             print(owner.money)
@@ -111,7 +112,7 @@ class Gameinfo:
                             sys.exit()
                         return True
                     else:
-                        self.active = False
+                        player.active = False
                         return False
 
     def utility_rent(self):
@@ -165,13 +166,19 @@ class Gameinfo:
                 print('self.board.iloc[square]: {}'.format(self.board.iloc[square]))
             return owner, rent_payment
 
-    def display_player_stats(self):
+    def display_second_stats(self):
         for player in self.playerlist:
             print(player.playername, player.current_position, int(player.money), player.active)
 
-        print(self.board.owner)
+    def display_player_stats(self):
+        pass
+        # for player in self.playerlist:
+        #     print(player.playername, player.current_position, int(player.money), player.active)
+
+        #print(self.board.owner)
 
     def turn(self, player):
+        print('player {} has {}'.format(player, player.money))
         player.move()
         if player.current_position in (7, 22, 36):  # chance squares
             # TODO: fix Chance in Game_info.turn
@@ -226,7 +233,10 @@ class Gameinfo:
         """
 
         while True:
+            the_time = arrow.utcnow()
             for player in self.playerlist:
+                # if the_time.replace(seconds=the_time.timetuple().tm_sec+1) == arrow.utcnow():
+                #     self.display_second_stats()
                 the_time = arrow.utcnow()
                 if self.force_game_over >= the_time and sum([1 for x in self.playerlist if x.active]) > 1:
                     if player.active:
