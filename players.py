@@ -15,7 +15,7 @@ class Generic_Strategy:
         if self.player.money < self.game.house_cost:
             return False
         for x in range(5):
-            if randint(0,100)<75:
+            if randint(0,100)<95:
                 house_bought.append(self.should_i_buy_house(square))
             else:
                 pass
@@ -70,7 +70,7 @@ class Player:
         return self.playername
 
     def move(self):
-        newpos = (self.current_position + randint(2, 12)) % len(self.game.board)
+        newpos = (self.current_position + randint(1, 6)+randint(1, 6)) % len(self.game.board)
         if newpos < self.current_position:  # passed go
             self.money += 200
         self.current_position = newpos
@@ -92,7 +92,7 @@ class Player:
 
         while (self.money < 0):
             idxlist = self._find_property_indexes()
-            print('player {} owns {}'.format(self.playername, idxlist))
+            #print('player {} owns {}'.format(self.playername, idxlist))
             if idxlist == []:
                 self.loss = True
                 self.active = False
@@ -109,7 +109,7 @@ class Player:
             print("ERROR somewhere ERROR")
 
         elif (self.game.board.houses.iloc[pos]) > 0:
-            print('{} selling house #{} at {}'.format(self, self.game.board.houses.iloc[pos], pos))
+            #print('{} selling house #{} at {}'.format(self, self.game.board.houses.iloc[pos], pos))
             self.money += self.game.house_cost
             self.game.board.houses.iloc[pos] -= 1
             if self.money > 0:
@@ -117,7 +117,7 @@ class Player:
             else:
                 self.sell(pos)
                 return
-        print('{} selling property {}'.format(self, pos))
+        #print('{} selling property {}'.format(self, pos))
         self.money += self.game.board.cost.iloc[pos]
         self.game.board.owner.iloc[pos] = None
 
