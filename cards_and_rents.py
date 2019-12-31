@@ -1,60 +1,67 @@
-import os
-from random import randint
-import pandas as pd
-from copy import deepcopy
 import arrow
 import logging
-log = logging.getLogger('SEC')
-from pandas.util.testing import expr
+from copy import deepcopy
+from pathlib import Path
+from random import randint
 
-basePath = os.path.dirname(os.path.abspath(__file__))
+from exceptions import BrokeBankError
+
+log = logging.getLogger('SEC')
 
 
 class Gameinfo:
+    max_houses = 4
     def __init__(self):
+        self.bank_money = 15140
         self.rounds_to_play = 1
         self.timeout = False
-        self.board = pd.read_json(basePath + os.sep + 'board.json')
-        self.board.index = self.board.index.map(int)
-        # self.board.cost = self.board.cost.map(int)
-        self.board.type = self.board.type.map(str)
+
+        #set up board
+        self.board = pd.read_json(Path('board.json').read_text())
+        self.board.index.name = 'square'
         self.board.sort_index(inplace=True)
+        self.board.index = self.board.index.map(np.int8)
+
         self.playerlist = []
         self.house_cost = 150
         self.board.houses = 0
 
+        self.owners = self.board.owner.tolist()
+        self.houses = self.board.houses.tolist()
+
+    @property
+    def bank_money(self):
+        return self._bank_money
+
+    @bank_money.setter
+    def bank_money(self, value):
+        if value >= 0:
+            self._bank_money = value
+        else:
+            raise BrokeBankError
+
     def owned_by(self, square=0):
-        return self.board.owner.iloc[square]
+        return self.owners[square]
 
     def is_buyable(self, square):
         """can you buy the place?"""
-        if square in self.board[(self.board.type == 'gov')].index:
-            return False
-        elif self.owned_by(square) == None:
-            return True
-        else:
-            return False
+        return self.owners[square] == None
 
     def is_property(self, square):
         return self.board.type[square] == 'property'
 
-    def is_house_buyable(self, player, square):
-        if square in self.board[((self.board.type == 'property')
-                                     & (self.board.owner.notnull())
-                                     & (self.board.owner == player)
-                                     & (self.board.houses < 5))].index:
+    def is_house_buyable(self, square):
+        """assumes you are asking about squares you own"""
+        return self.houses[square] <= max_houses
+
+    def buy_property(self, player, square):
+        if self.is_buyable(square) and player.money >= self.board.cost[square]:
+            cost = self.board.cost.iloc[square]
+            player.money -= cost
+            self.bank_money += cost
+            self.board.loc[square, 'owner'] = player
+            player.buying_property_history.add(square)
             return True
-        return False
-
-    def buy(self, player, square):
-        """ mutates state, buying a Property"""
-        if self.is_buyable(square) and player.money > self.board.cost[square]:
-            if player.should_i_buy_square(square) == True:
-                player.money -= self.board.cost.iloc[square]
-
-                self.board.loc[square, 'owner'] = player
-                player.buying_property_history.add(square)
-                return True
         return False
 
     def buy_house(self, player, square):
@@ -64,7 +71,8 @@ class Gameinfo:
                 if player.should_i_buy_house(square):
                     self.board.loc[square, 'houses'] += 1
                     player.money -= self.house_cost
-                    #print('player {} bought a house # {} at {}'.format(player, self.board.houses.iloc[square],
+                    self.bank_money += self.house_cost
+                    # print('player {} bought a house # {} at {}'.format(player, self.board.houses.iloc[square],
                     #                                                   self.board.name.iloc[square]))
                     player.buying_houses_history[square] += 1
                     return True
@@ -103,7 +111,7 @@ class Gameinfo:
                     if can_pay:
                         try:
                             owner.money += rent
-                            #print('after player: {} has {}'.format(player, player.money))
+                            # print('after player: {} has {}'.format(player, player.money))
 
                         except TypeError as e:
                             print(owner.money)
@@ -150,9 +158,9 @@ class Gameinfo:
         elif self.board.type[square] == 'utility':
             return owner, self.utility_rent()
         elif owner != player and \
-                        len(set(
-                            self.board.owner[self.board[self.board.color == self.board.color[
-                                square]].index])) == 1:  # player owns all of a color
+                len(set(
+                    self.board.owner[self.board[self.board.color == self.board.color[
+                        square]].index])) == 1:  # player owns all of a color
             return owner, self.board.rent[square][self.board.houses.iloc[square]] * 2
         else:  # properties
             try:
@@ -175,7 +183,7 @@ class Gameinfo:
         # for player in self.playerlist:
         #     print(player.playername, player.current_position, int(player.money), player.active)
 
-        #print(self.board.owner)
+        # print(self.board.owner)
 
     def turn(self, player):
         print('player {} has {}'.format(player, player.money))
@@ -187,7 +195,7 @@ class Gameinfo:
             # TODO: fix community chest in Game_info.turn
             return
 
-        is_recently_bought = self.buy(player, player.current_position)
+        is_recently_bought = self.buy_property(player, player.current_position)
         if is_recently_bought:
             return
         if self.owned_by(player.current_position) == player:
@@ -247,7 +255,7 @@ class Gameinfo:
                     return
 
     def __enter__(self):
-        if os.path.exists('monopoly_data.json'):
+        if Path('monopoly_data.json').exists:
             self.stats = pd.read_json('monopoly_data.json')
 
         else:

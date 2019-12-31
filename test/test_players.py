@@ -2,7 +2,7 @@ import unittest
 from cards_and_rents import *
 from players import Player, Generic_Strategy
 import numpy as np
-import pandas.util.testing as pdt
+
 
 class Players(unittest.TestCase):
     def setUp(self):
@@ -31,7 +31,7 @@ class Players(unittest.TestCase):
         self.assertEqual(self.p1.money, the_money+200)
 
     def test_is_owned(self):
-        self.g1.buy(player=self.p1, square=1)
+        self.g1.buy_property(player=self.p1, square=1)
         self.assertEqual(self.p1.is_owned(square=1), True)
 
 

@@ -1,0 +1,2 @@
+class BrokeBankError(Exception):
+    pass
