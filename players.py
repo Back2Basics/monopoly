@@ -33,12 +33,12 @@ class Generic_Strategy:
                 return True
         return False
 
-    def should_i_buy_square(self, square=0):
+    def should_i_buy_property(self, player=None, square=0):
         """buy a property or house on the current position
         percentage_in_whole_numbers = 25(%)"""
         if square is None:
             square = self.square
-        if self.game.is_buyable(square):
+        if self.game.is_buyable(player=player, square=square):
             # should you buy if the strategy probablilities say no
             if randint(1, 100) > self.buy_percent:
                 print('returning because this did not buy or upgrade anything')
@@ -93,8 +93,6 @@ class Player:
             self.money += 200
         self.current_position = newpos
 
-
-
     def is_owned(self, square):
         return square in self.game.board[not pd.isnull(self.game.board.owner)].index
 
@@ -104,31 +102,29 @@ class Player:
     def should_i_buy_house(self, square):
         return self.strategy.should_i_buy_house(square)
 
-    def should_i_buy_square(self, square):
-        return self.strategy.should_i_buy_square(square)
+    def should_i_buy_property(self, square):
+        return self.strategy.should_i_buy_property(square)
 
-    def _find_property_indexes(self):
-        return list(self.game.board[self.game.board.owner == self].index)
 
     def get_money_by_selling(self):
         """find a owned property on the board pick one randomly and sell it"""
 
         while (self.money < 0):
-            idxlist = self._find_property_indexes()
+            square_list = self.game.get_all_owned_by(player=self)
             # print('player {} owns {}'.format(self.playername, idxlist))
-            if idxlist == []:
+            if square_list == []:
                 self.loss = True
                 self.active = False
                 print('Player {} loses'.format(self.playername))
                 return False
-            idx = choice(idxlist)
-            self.sell(idx)
+            square = choice(square_list)
+            self.sell(square)
         return True
 
     def sell(self, square=None):
         if square is None:  # this is good for testing purposes
             square = self.current_position
-        if (self.game.board.houses.iloc[square]) < 0:
+        if (self.game.houses.iloc[square]) < 0:
             print("ERROR somewhere ERROR")
 
         elif (self.game.board.houses.iloc[square]) > 0:

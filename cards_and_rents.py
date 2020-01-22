@@ -1,8 +1,11 @@
-import arrow
 import logging
 from copy import deepcopy
+from datetime import datetime as dt
 from pathlib import Path
 from random import randint
+
+import numpy as np
+import pandas as pd
 
 from exceptions import BrokeBankError
 
@@ -11,21 +14,30 @@ log = logging.getLogger('SEC')
 
 class Gameinfo:
     max_houses = 4
-    def __init__(self):
+
+    # TODO: ADD PLAYERS TO THE GAME
+    def __init__(self, player_count=2, rounds=1):
         self.bank_money = 15140
-        self.rounds_to_play = 1
+        self.rounds_to_play = rounds
+
         self.timeout = False
 
-        #set up board
+        # set up board
         self.board = pd.read_json(Path('board.json').read_text())
         self.board.index.name = 'square'
         self.board.sort_index(inplace=True)
         self.board.index = self.board.index.map(np.int8)
 
-        self.playerlist = []
+        self.starting_playerlist = []
         self.house_cost = 150
         self.board.houses = 0
 
+        self.owners = self.board.owner.tolist()
+        self.houses = self.board.houses.tolist()
+
+    def reset_game_with_same_players(self):
+        self.players_still_in_game = deepcopy(self.starting_playerlist)
+        self.bank_money = 15140
         self.owners = self.board.owner.tolist()
         self.houses = self.board.houses.tolist()
 
@@ -43,39 +55,40 @@ class Gameinfo:
     def owned_by(self, square=0):
         return self.owners[square]
 
-    def is_buyable(self, square):
+    def get_all_owned_by(self, player):
+        return [c for c, x in enumerate(self.owners) if x == player]
+
+    def is_buyable(self, player, square):
         """can you buy the place?"""
-        return self.owners[square] == None
+        return (self.owners[square] == None) and (player.money >= self.board.cost.iloc[square])
 
     def is_property(self, square):
         return self.board.type[square] == 'property'
 
-    def is_house_buyable(self, square):
+    def is_house_buyable(self, player, square):
         """assumes you are asking about squares you own"""
-        return self.houses[square] <= max_houses
+        return (self.houses[square] <= self.max_houses) and (player == self.owners[square]) and (
+                player.money >= self.house_cost)
 
     def buy_property(self, player, square):
-        if self.is_buyable(square) and player.money >= self.board.cost[square]:
+        if self.is_buyable(player, square) and player.strategy.should_i_buy_property(player=player, square=square):
+            print(f'player: {player} is buying {self.board.name.iloc[square]}')
             cost = self.board.cost.iloc[square]
             player.money -= cost
             self.bank_money += cost
-            self.board.loc[square, 'owner'] = player
+            self.owners[square] = player
             player.buying_property_history.add(square)
             return True
         return False
 
     def buy_house(self, player, square):
         """ mutates state, buying a house"""
-        if self.is_house_buyable(player, square):
-            if square in self.board[((self.board.owner == player) & (self.board.houses < 5))].index:
-                if player.should_i_buy_house(square):
-                    self.board.loc[square, 'houses'] += 1
-                    player.money -= self.house_cost
-                    self.bank_money += self.house_cost
-                    # print('player {} bought a house # {} at {}'.format(player, self.board.houses.iloc[square],
-                    #                                                   self.board.name.iloc[square]))
-                    player.buying_houses_history[square] += 1
-                    return True
+        if self.is_house_buyable(player, square) and player.should_i_buy_house(square):
+            self.houses[square] += 1
+            player.money -= self.house_cost
+            self.bank_money += self.house_cost
+            player.buying_houses_history[square] += 1
+            return True
         return False
 
     def whom_do_i_pay_rent(self, square):
@@ -130,15 +143,31 @@ class Gameinfo:
             return (randint(2, 12) * 10)
 
     def how_much_rent(self, square, player=None):  # n is board index
-        """question is how much rent do I need to pay and to whom
-        so pass in player = self
+        """Paying Rent
+        When you land on a property that is owned by another player,
+        the owner collects rent from you in accordance with the list
+        printed on its Title Deed card. If the property is mortgaged,
+        no rent can be collected. When a property is mortgaged, its
+        Title Deed card is placed face down in front of the owner.
+        It is an advantage to hold all the Title Deed cards in a color-group
+        (i.e., Boardwalk and Park Place, or Connecticut, Vermont and Oriental Avenues)
+        because the owner may then charge double rent for
+        unimproved properties in that color-group. This rule
+        applies to unmortgaged properties even if another property
+        in that color-group is mortgaged.
+        It is even more advantageous to have houses or hotels
+        on properties because rents are much higher than for
+        unimproved properties. The owner may not collect the
+        rent if they fail to ask for it before the second player following throws the dice.
         :return How_much, to_whom
         """
-        # nobody owns the square
-        if pd.isnull(self.board.owner.iloc[square]):
-            return player, 0
-        if self.owned_by(square) == player:  # the player owns it
-            return player, 0
+        # if nobody owns the square we wouldn't have gotten here (see turn())
+        # if owned by the player we wouldn't have gotten here (see turn())
+        #if someone else owns the square
+        if self.owned_by(square) != player and self.owned_by(square) != 'gov' :
+            #do they own all squares of that color and are unimproved?
+            # TODO: put that here
+            return self.owned_by(square), self.board.rent.iloc[square]
 
         owner = self.owned_by(square)
         if self.board.type.iloc[square] == 'gov':
@@ -185,21 +214,32 @@ class Gameinfo:
 
         # print(self.board.owner)
 
+    def chance(self):
+        # TODO: fix chance()
+        pass
+
+    def community_chest(self):
+        # TODO: fix community chest in Game_info.turn
+        pass
+
     def turn(self, player):
         print('player {} has {}'.format(player, player.money))
         player.move()
         if player.current_position in (7, 22, 36):  # chance squares
-            # TODO: fix Chance in Game_info.turn
+            self.chance()
             return
-        if player.current_position in (2, 17, 33):
-            # TODO: fix community chest in Game_info.turn
+        elif player.current_position in (2, 17, 33):
+            self.community_chest()
             return
-
-        is_recently_bought = self.buy_property(player, player.current_position)
-        if is_recently_bought:
+        elif self.owned_by(player.current_position) == 'gov':
             return
-        if self.owned_by(player.current_position) == player:
-            is_house_bought = player.house_buying_strategy(player.current_position)
+            # TODO: fix the gov utilities and jail and free parking etc...
+        elif self.owned_by(player.current_position) is None:
+            is_recently_bought = self.buy_property(player, player.current_position)
+            if is_recently_bought:
+                return
+        elif self.owned_by(player.current_position) == player:
+            is_house_bought = self.buy_house(player.current_position)
             if is_house_bought:
                 return
         else:
@@ -219,18 +259,18 @@ class Gameinfo:
         #         self.money # 1500
 
     def start_rounds(self):
-        players_copy = self.playerlist
-        for game in range(self.rounds_to_play):
-            self.playerlist = players_copy
+        self.players_still_in_game = deepcopy(self.starting_playerlist)
+
+        for game_number in range(self.rounds_to_play):
             self.start_game()
             # game finishes here
             self.collect_stats()
-            players_copy = deepcopy(self.playerlist)
+            self.reset_game_with_same_players()
 
     def start_game(self):
 
-        self.starttime = arrow.utcnow()
-        self.force_game_over = self.starttime.shift(seconds=10)
+        self.starttime = dt.now()
+        # self.force_game_over = self.starttime.shift(seconds=10)
 
         self.loop_forever()
         print('Player {} Wins'.format([x for x in self.playerlist if x.active]))
@@ -241,22 +281,25 @@ class Gameinfo:
         """
 
         while True:
-            the_time = arrow.utcnow()
-            for player in self.playerlist:
+            the_time = dt.now()
+            for player in self.players_still_in_game:
                 # if the_time.replace(seconds=the_time.timetuple().tm_sec+1) == arrow.utcnow():
                 #     self.display_second_stats()
-                the_time = arrow.utcnow()
-                if self.force_game_over >= the_time and sum([1 for x in self.playerlist if x.active]) > 1:
-                    if player.active:
-                        self.turn(player)
-                    the_time = arrow.utcnow()
+                the_time = dt.now()
+                # if self.force_game_over >= the_time and \
+                if len(self.players_still_in_game) > 1:
+                    self.turn(player)
                 else:
+                    raise OvertimeError("Game went too long")
 
-                    return
+    def player_is_out(self, player):
+        # should be sold out but just in case
+        for square in self.owned_by(player):
+            player.sell(square=square)
 
     def __enter__(self):
-        if Path('monopoly_data.json').exists:
-            self.stats = pd.read_json('monopoly_data.json')
+        if Path('monopoly_data.json').exists():
+            self.stats = pd.read_json(Path('monopoly_data.json').read_text())
 
         else:
             self.stats = pd.DataFrame(
