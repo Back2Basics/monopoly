@@ -1,5 +1,4 @@
 from random import randint, choice
-from cards_and_rents import Gameinfo
 import numpy as np
 
 

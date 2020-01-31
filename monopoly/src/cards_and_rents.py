@@ -1,4 +1,5 @@
 import logging
+import sys
 from copy import deepcopy
 from datetime import datetime as dt
 from pathlib import Path
@@ -7,9 +8,13 @@ from random import randint
 import numpy as np
 import pandas as pd
 
-from exceptions import BrokeBankError
+from .exceptions import BrokeBankError
 
 log = logging.getLogger('SEC')
+
+
+class OvertimeError:
+    pass
 
 
 class Gameinfo:
@@ -19,11 +24,15 @@ class Gameinfo:
     def __init__(self, player_count=2, rounds=1):
         self.bank_money = 15140
         self.rounds_to_play = rounds
-
+        self.playerlist= []
         self.timeout = False
 
         # set up board
-        self.board = pd.read_json(Path('board.json').read_text())
+        file_location = Path(__file__).parent.parent/'data'/'board.json'
+
+
+
+        self.board = pd.read_json(file_location.read_text())
         self.board.index.name = 'square'
         self.board.sort_index(inplace=True)
         self.board.index = self.board.index.map(np.int8)
@@ -31,9 +40,9 @@ class Gameinfo:
         self.starting_playerlist = []
         self.house_cost = 150
         self.board.houses = 0
-
         self.owners = self.board.owner.tolist()
         self.houses = self.board.houses.tolist()
+        self.mortgaged_properties = [False] * len(self.board)
 
     def reset_game_with_same_players(self):
         self.players_still_in_game = deepcopy(self.starting_playerlist)
@@ -72,7 +81,7 @@ class Gameinfo:
 
     def buy_property(self, player, square):
         if self.is_buyable(player, square) and player.strategy.should_i_buy_property(player=player, square=square):
-            print(f'player: {player} is buying {self.board.name.iloc[square]}')
+            print(f"player: {player} is buying {self.board.name.iloc[square]}")
             cost = self.board.cost.iloc[square]
             player.money -= cost
             self.bank_money += cost
@@ -92,7 +101,10 @@ class Gameinfo:
         return False
 
     def whom_do_i_pay_rent(self, square):
-        return self.owned_by(square)
+        if self.mortgaged_properties[square]:
+            return None
+        else:
+            return self.owned_by(square)
 
     def check_money(self, player, rent):
         """does the player have money to pay"""
@@ -142,7 +154,7 @@ class Gameinfo:
         else:
             return (randint(2, 12) * 10)
 
-    def how_much_rent(self, square, player=None):  # n is board index
+    def how_much_rent(self, square=None, player=None):  # n is board index
         """Paying Rent
         When you land on a property that is owned by another player,
         the owner collects rent from you in accordance with the list
@@ -163,11 +175,17 @@ class Gameinfo:
         """
         # if nobody owns the square we wouldn't have gotten here (see turn())
         # if owned by the player we wouldn't have gotten here (see turn())
-        #if someone else owns the square
-        if self.owned_by(square) != player and self.owned_by(square) != 'gov' :
-            #do they own all squares of that color and are unimproved?
-            # TODO: put that here
-            return self.owned_by(square), self.board.rent.iloc[square]
+        # if someone else owns the square
+        if self.owned_by(square) not in [player,  'gov']:
+            rent = self.owned_by(square), self.board.rent.iloc[square][self.houses[square]]
+            for x in self.board.groupby('color'):
+                if x[0] == self.board.color.iloc[square]:
+                    # do they own all squares of that color and are unimproved?
+                    if all([(self.owners[y] == self.owned_by(square)) and (self.houses[y] == 0) for y in x[1].index]):
+                        # rent doubles
+                        rent *= 2
+
+            return rent
 
         owner = self.owned_by(square)
         if self.board.type.iloc[square] == 'gov':
@@ -239,7 +257,7 @@ class Gameinfo:
             if is_recently_bought:
                 return
         elif self.owned_by(player.current_position) == player:
-            is_house_bought = self.buy_house(player.current_position)
+            is_house_bought = self.buy_house(player=player, square=player.current_position)
             if is_house_bought:
                 return
         else:
@@ -311,7 +329,7 @@ class Gameinfo:
             print('timeout')
             return
         else:
-            with open('monopoly_stats.json', 'w') as statsfile:
+            with open('../../monopoly_stats.json', 'w') as statsfile:
                 statsfile.write(pd.DataFrame.to_json(self.stats))
 
                 # I should have information about the winners and losers

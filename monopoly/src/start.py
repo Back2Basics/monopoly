@@ -1,8 +1,7 @@
 # after building the cards and rents and players components getting turns tested then I see this
 # https://www.youtube.com/watch?v=ubQXz5RBBtU
 # well I'm hoping
-
-from cards_and_rents import *
+from cards_and_rents import Gameinfo
 from players import *
 
 with Gameinfo() as gi:

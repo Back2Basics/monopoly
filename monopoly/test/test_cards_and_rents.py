@@ -1,9 +1,10 @@
 import unittest
-from cards_and_rents import *
-from players import Player, Generic_Strategy
+from monopoly.src.players import Player, Generic_Strategy
 import numpy as np
-import pandas.util.testing as pdt
+from monopoly.src.cards_and_rents import Gameinfo
+import pandas.testing as pdt
 
+import pandas as pd
 
 class HowMuchRentTests(unittest.TestCase):
     def setUp(self):

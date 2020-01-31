@@ -1,7 +1,5 @@
 import unittest
-from cards_and_rents import *
 from players import Player, Generic_Strategy
-import numpy as np
 
 
 class Players(unittest.TestCase):
