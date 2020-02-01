@@ -27,6 +27,18 @@ class HowMuchRentTests(unittest.TestCase):
         self.g1.buy_house(self.p1, 1)
         self.assertEqual(self.g1.how_much_rent(1, self.p2), (self.p1, 10))
 
+    def test_how_much_railroad_rent(self):
+        self.g1.buy_property(self.p1, 5)
+        self.assertEqual(self.g1.how_much_rent(5, self.p2), (self.p1, 25))  # it's a railroad
+
+        self.g1.buy_property(self.p1, 15)
+        self.assertEqual(self.g1.how_much_rent(5, self.p2), (self.p1, 50))  # it's a railroad
+
+        self.g1.buy_property(self.p1, 25)
+        self.assertEqual(self.g1.how_much_rent(5, self.p2), (self.p1, 100))  # it's a railroad
+
+        self.assertNotEqual(self.g1.how_much_rent(5, self.p2), (self.p1, 50))  # it's a railroad
+
     def test_how_much_rent(self):
 
         self.g1.buy_property(self.p1, 1)
@@ -38,16 +50,6 @@ class HowMuchRentTests(unittest.TestCase):
 
         self.assertEqual(self.g1.how_much_rent(1, self.p2), (self.p1, 10))
 
-        self.g1.buy_property(self.p1, 5)
-        self.assertEqual(self.g1.how_much_rent(5, self.p2), (self.p1, 25))  # it's a railroad
-
-        self.g1.buy_property(self.p1, 15)
-        self.assertEqual(self.g1.how_much_rent(5, self.p2), (self.p1, 50))  # it's a railroad
-
-        self.g1.buy_property(self.p1, 25)
-        self.assertEqual(self.g1.how_much_rent(5, self.p2), (self.p1, 100))  # it's a railroad
-
-        self.assertNotEqual(self.g1.how_much_rent(5, self.p2), (self.p1, 50))  # it's a railroad
         self.g1.buy_property(self.p1, 28)
         self.g1.buy_property(self.p1, 12)
 

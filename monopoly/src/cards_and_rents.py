@@ -24,13 +24,11 @@ class Gameinfo:
     def __init__(self, player_count=2, rounds=1):
         self.bank_money = 15140
         self.rounds_to_play = rounds
-        self.playerlist= []
+        self.playerlist = []
         self.timeout = False
 
         # set up board
-        file_location = Path(__file__).parent.parent/'data'/'board.json'
-
-
+        file_location = Path(__file__).parent.parent / 'data' / 'board.json'
 
         self.board = pd.read_json(file_location.read_text())
         self.board.index.name = 'square'
@@ -173,10 +171,18 @@ class Gameinfo:
         rent if they fail to ask for it before the second player following throws the dice.
         :return How_much, to_whom
         """
+
         # if nobody owns the square we wouldn't have gotten here (see turn())
-        # if owned by the player we wouldn't have gotten here (see turn())
-        # if someone else owns the square
-        if self.owned_by(square) not in [player,  'gov']:
+        # if owned by the player themselves we wouldn't have gotten here (see turn())
+
+        # so who owns the square
+        owner = self.owned_by(square)
+        if owner not in [player, 'gov']:
+            # railroads and utilities have to come first because they don't have a color
+            if self.board.type[square] == 'railroad':
+                how_many_rr_does_other_own = sum([self.owner[x] == owner for x in [5, 15, 25, 35]])
+                return owner, list(self.board.rent[square])[how_many_rr_does_other_own - 1]
+
             rent = self.owned_by(square), self.board.rent.iloc[square][self.houses[square]]
             for x in self.board.groupby('color'):
                 if x[0] == self.board.color.iloc[square]:
@@ -187,20 +193,12 @@ class Gameinfo:
 
             return rent
 
-        owner = self.owned_by(square)
         if self.board.type.iloc[square] == 'gov':
             if square == 4:  # landed on Income Tax
                 tax = max(int(player.money * 0.10), 200)  # greater of 200 or 10%
                 return 'gov', tax
             return 'gov', 0
 
-        # railroads and utilities have to come first because they don't have a color
-        elif self.board.type[square] == 'railroad':
-            # add players Railroad cards
-            owns_rr = self.board.owner[self.board.type == 'railroad']
-            how_many_rr_does_player_own = (owns_rr == owner).sum()
-
-            return owner, list(self.board.rent[square])[how_many_rr_does_player_own - 1]
 
         elif self.board.type[square] == 'utility':
             return owner, self.utility_rent()
